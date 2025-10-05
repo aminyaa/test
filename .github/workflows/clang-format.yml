@@ -1,9 +1,32 @@
-BasedOnStyle: LLVM
-IndentWidth: 2
-UseTab: Never
-BreakBeforeBraces: Allman
-ColumnLimit: 100
-AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: true
-AlignConsecutiveDeclarations: true
-PointerAlignment: Left  # For int* ptr
+name: Clang-Format Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run clang-format
+      uses: jidicula/clang-format-action@v4.1.0  # Or RafikFarhad/clang-format-github-action@v3
+      with:
+        sources: "src/**/*.cpp,src/**/*.hpp,include/**/*.hpp,tests/**/*.cpp"
+        exclude: "build/,third_party/"
+        style: file  # Uses your .clang-format
+        fallback-style: LLVM
+
+    # Optional: Auto-fix and commit changes (for pushes only)
+    - name: Auto-fix and commit
+      if: github.event_name == 'push' && github.repository_owner == 'your-username'
+      uses: EndBug/add-and-commit@v9
+      with:
+        author_name: Clang-Format Bot
+        author_email: bot@example.com
+        message: "Apply clang-format fixes"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
